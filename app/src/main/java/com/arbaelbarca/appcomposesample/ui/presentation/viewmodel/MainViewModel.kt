@@ -1,4 +1,4 @@
-package com.arbaelbarca.appcomposesample.ui.presentation.ViewModel
+package com.arbaelbarca.appcomposesample.ui.presentation.viewmodel
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -49,11 +49,18 @@ class MainViewModel(
                     )
                 }
             }.collectLatest { dataList ->
-                getuiState.update {
-                    MainUiState.Success(
-                        data = dataList
-                    )
+                if (dataList.isNullOrEmpty()) {
+                    getuiState.update {
+                        MainUiState.Empty
+                    }
+                } else {
+                    getuiState.update {
+                        MainUiState.Success(
+                            data = dataList
+                        )
+                    }
                 }
+
             }
         }
     }

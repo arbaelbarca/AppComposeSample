@@ -19,7 +19,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.arbaelbarca.appcomposesample.domain.model.Meals
-import com.arbaelbarca.appcomposesample.ui.presentation.ViewModel.MainViewModel
+import com.arbaelbarca.appcomposesample.ui.presentation.viewmodel.MainViewModel
 import com.arbaelbarca.appcomposesample.ui.presentation.model.MainEventState
 import com.arbaelbarca.appcomposesample.ui.presentation.model.MainUiState
 import com.arbaelbarca.appcomposesample.ui.theme.AppComposeSampleTheme
