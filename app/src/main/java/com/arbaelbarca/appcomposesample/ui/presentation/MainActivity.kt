@@ -1,5 +1,6 @@
 package com.arbaelbarca.appcomposesample.ui.presentation
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -12,16 +13,27 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
+import com.arbaelbarca.appcomposesample.R
 import com.arbaelbarca.appcomposesample.domain.model.Meals
-import com.arbaelbarca.appcomposesample.ui.presentation.viewmodel.MainViewModel
+import com.arbaelbarca.appcomposesample.ui.presentation.activity.DetailActivity
+import com.arbaelbarca.appcomposesample.ui.presentation.bottomnavigation.menu.BottomNavItemMenu
 import com.arbaelbarca.appcomposesample.ui.presentation.model.MainEventState
 import com.arbaelbarca.appcomposesample.ui.presentation.model.MainUiState
+import com.arbaelbarca.appcomposesample.ui.presentation.viewmodel.MainViewModel
 import com.arbaelbarca.appcomposesample.ui.theme.AppComposeSampleTheme
 import org.koin.androidx.compose.koinViewModel
 
@@ -42,7 +54,10 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@Preview
+@Preview(
+    showSystemUi = true,
+    showBackground = true
+)
 @Composable
 fun MainRoute(
     mainViewModel: MainViewModel = koinViewModel()
@@ -65,6 +80,10 @@ fun MainRoute(
         },
         onClickItem = {
             Toast.makeText(context, it.strMeal, Toast.LENGTH_SHORT).show()
+            val intent = Intent(context, DetailActivity::class.java)
+            intent.putExtra("data", it)
+            context.startActivity(intent)
+            println("respon clikck Row")
         }
     )
 }
@@ -101,11 +120,16 @@ fun MainScreen(
 
         when (mainUiState) {
             is MainUiState.Loading -> {
-                CircularProgressIndicator()
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .wrapContentSize(Alignment.Center)
+                )
             }
 
             is MainUiState.Success -> {
                 LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                     content = {
                         items(
@@ -131,15 +155,36 @@ fun MainScreen(
             }
 
             is MainUiState.Empty -> {
-                Text(text = "data kosong nih")
+                Text(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .wrapContentSize(Alignment.Center),
+                    text = "data kosong nih"
+                )
             }
 
             is MainUiState.Idle -> {
-                Text(text = "Ayo coba cari")
+                Text(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .wrapContentSize(Alignment.Center),
+                    text = "Ayo coba cari"
+                )
             }
         }
 
+
     }
+
+    val navController = rememberNavController()
+    InitBottomNavigationView(navController = navController)
+
+//    Scaffold(
+//        bottomBar = {
+//        }
+//    ) {
+//
+//    }
 }
 
 @Composable
@@ -189,8 +234,9 @@ fun ItemList(
 ) {
     Row(
         modifier = modifier
+            .fillMaxSize()
             .clickable {
-                onClick
+                onClick.invoke()
             }
     ) {
         AsyncImage(
@@ -206,6 +252,58 @@ fun ItemList(
                 .padding(start = 10.dp)
         )
 
-        Text(text = name)
+        Text(
+            text = name,
+            modifier = Modifier
+                .fillMaxSize()
+                .fillMaxWidth()
+        )
+    }
+}
+
+@Composable
+fun InitBottomNavigationView(
+    navController: NavController
+) {
+    val listOfItemBottom = listOf(
+        BottomNavItemMenu.Home,
+        BottomNavItemMenu.MyNetwork,
+        BottomNavItemMenu.AddPost
+    )
+
+    BottomNavigation(
+        modifier = Modifier
+            .fillMaxSize()
+            .wrapContentSize(Alignment.BottomCenter),
+        backgroundColor = colorResource(id = R.color.purple_700),
+        contentColor = Color.White
+    ) {
+        val navBackStackEntry by navController.currentBackStackEntryAsState()
+        val currentRoute = navBackStackEntry?.destination?.route
+
+        listOfItemBottom.forEach {
+            BottomNavigationItem(selected = currentRoute == it.routeScreen,
+                icon = {
+                    Icon(painter = painterResource(id = it.icon), contentDescription = "")
+                },
+                label = {
+                    Text(text = it.title)
+                },
+                alwaysShowLabel = true,
+                selectedContentColor = Color.White,
+                unselectedContentColor = Color.Gray,
+                onClick = {
+                    navController.navigate(it.routeScreen) {
+                        navController.graph.startDestinationRoute.let { routeScreen ->
+                            popUpTo(routeScreen.toString()) {
+                                saveState = true
+                            }
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                })
+        }
+
     }
 }
